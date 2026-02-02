@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farm Manager Pro</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .farm-pattern {
+      background-image: 
+        linear-gradient(135deg, #10b981 0%, #059669 100%),
+        repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px);
+    }
+    
+    .card-shadow {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profit {
+      color: #10b981;
+    }
+    
+    .loss {
+      color: #ef4444;
+    }
+    
+    .input-field {
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .input-field:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .crop-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .crop-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    .crop-card.active {
+      border: 3px solid #10b981 !important;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+    
+    .expense-option {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1.05rem;
+    }
+    
+    .expense-option:hover {
+      transform: scale(1.05);
+      background-color: #f0fdf4;
+    }
+    
+    .expense-option.selected {
+      background-color: #d1fae5;
+      border-color: #10b981 !important;
+      border-width: 3px !important;
+    }
+    
+    .voice-btn {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .lang-toggle {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .big-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+    
+    .farm-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-in {
+      animation: slideIn 0.4s ease-out;
+    }
+
+    .sync-indicator {
+      position: fixed;
+      bottom-4;
+      right-4;
+      padding: 8px 16px;
+      background: #10b981;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 40;
+      animation: fadeInOut 2s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto"><!-- Auth Screen -->
+   <div id="authScreen" class="min-h-full farm-pattern flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl card-shadow p-8 w-full max-w-md">
+     <div class="text-center mb-6">
+      <svg class="farm-icon" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="160" cy="40" r="20" fill="#FDB813" /> <rect x="20" y="120" width="60" height="60" fill="#86EFAC" rx="5" /> <rect x="90" y="120" width="60" height="60" fill="#4ADE80" rx="5" /> <rect x="160" y="120" width="20" height="60" fill="#22C55E" rx="5" /> <text x="50" y="155" font-size="30">
+        🌾
+       </text> <text x="120" y="155" font-size="30">
+        🌽
+       </text> <circle cx="100" cy="95" r="15" fill="#F59E0B" /> <rect x="90" y="110" width="20" height="25" fill="#065F46" rx="3" /> <rect x="30" y="85" width="35" height="20" fill="#DC2626" rx="4" /> <circle cx="40" cy="110" r="8" fill="#1F2937" /> <circle cx="60" cy="110" r="8" fill="#1F2937" />
+      </svg>
+      <h1 id="appTitle" class="text-3xl font-bold text-gray-800 mb-2">Farm Manager Pro</h1>
+      <p id="welcomeMessage" class="text-gray-600">Manage your crops and finances</p>
+      <div class="flex justify-center items-center gap-2 mt-4"><button id="langToggle" class="lang-toggle bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold hover:bg-green-200 transition"> 🌐 <span id="langText">हिंदी</span> </button>
+      </div>
+     </div><!-- Login Form -->
+     <div id="loginForm">
+      <h2 id="loginTitle" class="text-2xl font-semibold text-gray-800 mb-6">Welcome Back</h2>
+      <form id="loginFormElement" class="space-y-4">
+       <div><label for="loginEmail" id="emailLabel" class="block text-sm font-medium text-gray-700 mb-2">Email</label> <input type="email" id="loginEmail" required class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div><label for="loginPassword" id="passwordLabel" class="block text-sm font-medium text-gray-700 mb-2">Password</label> <input type="password" id="loginPassword" required class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div><button type="submit" id="loginBtn" class="btn-primary w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Login</button>
+      </form>
+      <p class="text-center text-gray-600 mt-4"><span id="noAccountText">Don't have an account?</span> <button id="showSignupBtn" type="button" class="text-green-600 font-semibold hover:underline ml-1">Sign Up</button></p>
+     </div><!-- Signup Form -->
+     <div id="signupForm" style="display: none;">
+      <h2 id="signupTitle" class="text-2xl font-semibold text-gray-800 mb-6">Create Account</h2>
+      <form id="signupFormElement" class="space-y-4">
+       <div><label for="signupName" id="nameLabel" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label> <input type="text" id="signupName" required class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div><label for="signupEmail" id="signupEmailLabel" class="block text-sm font-medium text-gray-700 mb-2">Email</label> <input type="email" id="signupEmail" required class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div><label for="signupPassword" id="signupPasswordLabel" class="block text-sm font-medium text-gray-700 mb-2">Password</label> <input type="password" id="signupPassword" required class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div><button type="submit" id="signupBtn" class="btn-primary w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Sign Up</button>
+      </form>
+      <p class="text-center text-gray-600 mt-4"><span id="haveAccountText">Already have an account?</span> <button id="showLoginBtn" type="button" class="text-green-600 font-semibold hover:underline ml-1">Login</button></p>
+     </div>
+    </div>
+   </div><!-- Dashboard Screen -->
+   <div id="dashboardScreen" class="min-h-full bg-gray-50" style="display: none;">
+    <header class="farm-pattern text-white p-6 shadow-lg">
+     <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
+      <div class="flex items-center gap-3"><span class="text-5xl">👨‍🌾</span>
+       <div>
+        <h1 class="text-3xl font-bold">Farm Manager Pro</h1>
+        <p id="userGreeting" class="text-green-100 text-lg">Welcome back, Farmer!</p>
+       </div>
+      </div>
+      <div class="flex gap-3"><button id="langToggleDash" class="lang-toggle bg-white text-green-600 px-5 py-3 rounded-lg font-bold text-lg hover:bg-green-50 transition"> 🌐 <span id="langTextDash">हिंदी</span> </button> <button id="logoutBtn" class="bg-white text-green-600 px-6 py-3 rounded-lg font-bold text-lg hover:bg-green-50 transition"> <span id="logoutText">Logout</span> </button>
+      </div>
+     </div>
+    </header>
+    <main class="max-w-7xl mx-auto p-6">
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl card-shadow p-8 border-2 border-red-200">
+       <div class="text-center">
+        <div class="text-6xl mb-3">
+         💸
+        </div>
+        <p id="totalExpensesLabel" class="text-red-700 text-lg font-bold mb-2">Total Expenses</p>
+        <p id="totalExpenses" class="big-number text-red-600">₹0</p>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl card-shadow p-8 border-2 border-green-200">
+       <div class="text-center">
+        <div class="text-6xl mb-3">
+         💰
+        </div>
+        <p id="totalRevenueLabel" class="text-green-700 text-lg font-bold mb-2">Total Revenue</p>
+        <p id="totalRevenue" class="big-number text-green-600">₹0</p>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl card-shadow p-8 border-2 border-blue-200">
+       <div class="text-center">
+        <div class="text-6xl mb-3">
+         📊
+        </div>
+        <p id="netProfitLabel" class="text-blue-700 text-lg font-bold mb-2">Net Profit/Loss</p>
+        <p id="netProfit" class="big-number">₹0</p>
+       </div>
+      </div>
+     </div>
+     <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+      <div class="flex justify-between items-center mb-6">
+       <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3"><span class="text-4xl">🌾</span> <span id="step1Title">STEP 1: Select Your Crop / अपनी फसल चुनें</span></h2><button id="voiceBtn" class="bg-green-100 text-green-700 px-5 py-3 rounded-lg font-bold text-lg hover:bg-green-200 transition"> 🎤 <span id="voiceText">Voice</span> </button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="cropsList">
+      </div>
+      <div class="mt-6 p-4 bg-green-50 rounded-lg border-2 border-dashed border-green-300"><label class="block text-lg font-bold text-green-800 mb-3">➕ Add New Crop / नई फसल जोड़ें</label>
+       <div class="flex gap-3"><input type="text" id="newCropInput" placeholder="Enter crop name / फसल का नाम लिखें" class="input-field flex-1 px-5 py-3 rounded-lg border-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500"> <button id="addCropBtn" type="button" class="btn-primary bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 whitespace-nowrap"> <span id="addCropBtnText">Add / जोड़ें</span> </button>
+       </div>
+      </div>
+     </div>
+     <div id="expenseSection" class="bg-white rounded-2xl card-shadow p-8 mb-8" style="display: none;">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"><span class="text-4xl">💸</span> <span id="step2Title">STEP 2: Add Expense to <span id="selectedCropName" class="text-green-600"></span></span></h2>
+      <div class="mb-6"><label id="selectExpenseLabel" class="block text-xl font-bold text-gray-700 mb-4">Select Activity / गतिविधि चुनें</label>
+       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="expenseOptions">
+       </div>
+      </div>
+      <form id="entryForm" class="space-y-6">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label for="amount" id="amountLabel" class="block text-lg font-bold text-gray-700 mb-3">💵 Expense Amount (₹) / खर्च की राशि</label> <input type="number" id="amount" required min="0" step="0.01" class="input-field w-full px-6 py-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="0">
+        </div>
+        <div><label for="season" id="seasonLabel" class="block text-lg font-bold text-gray-700 mb-3">🌤️ Season / मौसम</label> <select id="season" required class="input-field w-full px-6 py-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"> <option value="">Select / चुनें</option> <option value="Kharif">Kharif / खरीफ</option> <option value="Rabi">Rabi / रबी</option> <option value="Zaid">Zaid / जायद</option> </select>
+        </div>
+       </div>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><button type="submit" class="btn-primary w-full bg-green-600 text-white py-5 rounded-xl font-bold hover:bg-green-700"> <span class="text-xl">➕ <span id="addBtnText">Add Expense / खर्च जोड़ें</span></span> </button> <button type="button" id="changeCropBtn" class="w-full bg-gray-200 text-gray-700 py-5 rounded-xl font-bold hover:bg-gray-300 transition text-xl"> <span id="changeCropBtnText">↩️ Change Crop / फसल बदलें</span> </button>
+       </div>
+      </form>
+     </div>
+     <div id="sellSection" class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl card-shadow p-8 mb-8 border-2 border-yellow-300" style="display: none;">
+      <h2 id="sellCropTitle" class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"><span class="text-4xl">💰</span> <span>SELL: <span id="sellSelectedCropName" class="text-yellow-600"></span></span></h2>
+      <form id="sellForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div><label for="sellQuantity" id="sellQuantityLabel" class="block text-lg font-bold text-gray-700 mb-3">📦 Quantity / मात्रा</label> <input type="number" id="sellQuantity" required min="0" step="0.01" class="input-field w-full px-6 py-4 rounded-lg border-2 border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="0">
+       </div>
+       <div><label for="sellRevenue" id="sellRevenueLabel" class="block text-lg font-bold text-gray-700 mb-3">💵 Sale Amount (₹) / बिक्री राशि</label> <input type="number" id="sellRevenue" required min="0" step="0.01" class="input-field w-full px-6 py-4 rounded-lg border-2 border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="0">
+       </div>
+       <div class="md:col-span-2"><button type="submit" class="btn-primary w-full bg-yellow-600 text-white py-5 rounded-xl font-bold hover:bg-yellow-700"> <span class="text-xl">💰 <span id="sellBtnText">Sell Crop / फसल बेचें</span></span> </button>
+       </div>
+      </form>
+     </div>
+     <div class="bg-white rounded-2xl card-shadow p-8">
+      <h2 id="cropListTitle" class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"><span class="text-4xl">📊</span> <span>Your Crops Summary / आपकी फसलों का सारांश</span></h2>
+      <div id="cropsDetailsList" class="space-y-6">
+       <p id="noEntriesText" class="text-gray-500 text-center py-8 text-lg">No crops yet. Add your first crop above!</p>
+      </div>
+     </div>
+    </main>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: "Farm Manager Pro",
+      welcome_message: "Manage your crops and finances",
+      background_color: "#10b981",
+      surface_color: "#ffffff",
+      text_color: "#1f2937",
+      primary_action_color: "#059669",
+      secondary_action_color: "#34d399",
+      font_family: "system-ui",
+      font_size: 16
+    };
+
+    // ============= LOCAL STORAGE & AUTHENTICATION SYSTEM =============
+    
+    // Simple hash function for passwords (not cryptographic, for demo)
+    function simpleHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(16);
+    }
+
+    // Local Storage Manager
+    const StorageManager = {
+      // Users database in localStorage
+      getUsers() {
+        const users = localStorage.getItem('farm_users');
+        return users ? JSON.parse(users) : {};
+      },
+
+      saveUsers(users) {
+        localStorage.setItem('farm_users', JSON.stringify(users));
+      },
+
+      // Session management
+      setSession(email, token) {
+        localStorage.setItem('farm_session', JSON.stringify({
+          email,
+          token,
+          timestamp: Date.now()
+        }));
+      },
+
+      getSession() {
+        const session = localStorage.getItem('farm_session');
+        return session ? JSON.parse(session) : null;
+      },
+
+      clearSession() {
+        localStorage.removeItem('farm_session');
+      },
+
+      // User data
+      getUserData(email) {
+        const data = localStorage.getItem(`farm_data_${email}`);
+        return data ? JSON.parse(data) : [];
+      },
+
+      saveUserData(email, data) {
+        localStorage.setItem(`farm_data_${email}`, JSON.stringify(data));
+      },
+
+      // Register new user
+      registerUser(email, password, name) {
+        const users = this.getUsers();
+        
+        if (users[email]) {
+          return { success: false, message: 'Email already registered' };
+        }
+
+        users[email] = {
+          email,
+          password: simpleHash(password),
+          name,
+          createdAt: Date.now()
+        };
+
+        this.saveUsers(users);
+        return { success: true, message: 'Account created successfully' };
+      },
+
+      // Login user
+      loginUser(email, password) {
+        const users = this.getUsers();
+        
+        if (!users[email]) {
+          return { success: false, message: 'Email not found' };
+        }
+
+        if (users[email].password !== simpleHash(password)) {
+          return { success: false, message: 'Incorrect password' };
+        }
+
+        const token = Math.random().toString(36).substr(2) + Date.now();
+        this.setSession(email, token);
+        
+        return { 
+          success: true, 
+          message: 'Login successful',
+          user: users[email]
+        };
+      }
+    };
+
+    // ============= APP STATE & VARIABLES =============
+    
+    let currentUser = null;
+    let allData = [];
+    let isUpdating = false;
+    let selectedCrop = '';
+    let selectedExpense = '';
+    let currentLang = 'en';
+    let userCrops = [];
+    let syncPending = false;
+    
+    // Translations
+    const translations = {
+      en: {
+        welcome: "Welcome back",
+        noAccount: "Don't have an account?",
+        haveAccount: "Already have an account?",
+        email: "Email",
+        password: "Password",
+        fullName: "Full Name",
+        login: "Login",
+        signup: "Sign Up",
+        createAccount: "Create Account",
+        logout: "Logout",
+        totalExpenses: "Total Expenses",
+        totalRevenue: "Total Revenue",
+        netProfit: "Net Profit/Loss",
+        voice: "Voice",
+        emailExists: "Email already registered",
+        invalidEmail: "Invalid email",
+        passwordShort: "Password must be at least 6 characters",
+        syncing: "💾 Syncing with server...",
+        synced: "✅ Data saved"
+      },
+      hi: {
+        welcome: "स्वागत है",
+        noAccount: "खाता नहीं है?",
+        haveAccount: "पहले से खाता है?",
+        email: "ईमेल",
+        password: "पासवर्ड",
+        fullName: "पूरा नाम",
+        login: "लॉगिन करें",
+        signup: "साइन अप करें",
+        createAccount: "खाता बनाएं",
+        logout: "लॉगआउट",
+        totalExpenses: "कुल खर्च",
+        totalRevenue: "कुल आय",
+        netProfit: "शुद्ध लाभ/हानि",
+        voice: "आवाज",
+        emailExists: "ईमेल पहले से पंजीकृत है",
+        invalidEmail: "अमान्य ईमेल",
+        passwordShort: "पासवर्ड कम से कम 6 वर्ण होना चाहिए",
+        syncing: "💾 सर्वर के साथ सिंक किया जा रहा है...",
+        synced: "✅ डेटा सहेजा गया"
+      }
+    };
+    
+    // Predefined crops with emojis
+    const crops = [
+      { name: 'Wheat', hindi: 'गेहूं', emoji: '🌾' },
+      { name: 'Rice', hindi: 'चावल', emoji: '🌾' },
+      { name: 'Cotton', hindi: 'कपास', emoji: '🌿' },
+      { name: 'Sugarcane', hindi: 'गन्ना', emoji: '🎋' },
+      { name: 'Maize', hindi: 'मक्का', emoji: '🌽' },
+      { name: 'Potato', hindi: 'आलू', emoji: '🥔' },
+      { name: 'Onion', hindi: 'प्याज', emoji: '🧅' },
+      { name: 'Tomato', hindi: 'टमाटर', emoji: '🍅' },
+      { name: 'Soybean', hindi: 'सोयाबीन', emoji: '🫘' },
+      { name: 'Groundnut', hindi: 'मूंगफली', emoji: '🥜' },
+      { name: 'Chickpea', hindi: 'चना', emoji: '🫘' }
+    ];
+    
+    // Predefined expense types with emojis
+    const expenseTypes = [
+      { name: 'Seeds', hindi: 'बीज', emoji: '🌱' },
+      { name: 'Fertilizer', hindi: 'खाद', emoji: '🧪' },
+      { name: 'Pesticides', hindi: 'कीटनाशक', emoji: '💊' },
+      { name: 'Labor', hindi: 'मजदूरी', emoji: '👷' },
+      { name: 'Irrigation', hindi: 'सिंचाई', emoji: '💧' },
+      { name: 'Plowing', hindi: 'जुताई', emoji: '🚜' },
+      { name: 'Harvesting', hindi: 'कटाई', emoji: '🌾' },
+      { name: 'Equipment', hindi: 'उपकरण', emoji: '🔧' },
+      { name: 'Transport', hindi: 'परिवहन', emoji: '🚛' },
+      { name: 'Storage', hindi: 'भंडारण', emoji: '🏠' },
+      { name: 'Electricity', hindi: 'बिजली', emoji: '⚡' },
+      { name: 'Other', hindi: 'अन्य', emoji: '📝' }
+    ];
+
+    // ============= LANGUAGE & UI FUNCTIONS =============
+    
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'hi' : 'en';
+      updateLanguage();
+    }
+    
+    function updateLanguage() {
+      const t = translations[currentLang];
+      
+      document.getElementById('langText').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
+      document.getElementById('langTextDash').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
+      
+      document.getElementById('loginTitle').textContent = t.welcome;
+      document.getElementById('signupTitle').textContent = t.createAccount;
+      document.getElementById('noAccountText').textContent = t.noAccount;
+      document.getElementById('haveAccountText').textContent = t.haveAccount;
+      document.getElementById('emailLabel').textContent = t.email;
+      document.getElementById('passwordLabel').textContent = t.password;
+      document.getElementById('nameLabel').textContent = t.fullName;
+      document.getElementById('signupEmailLabel').textContent = t.email;
+      document.getElementById('signupPasswordLabel').textContent = t.password;
+      document.getElementById('loginBtn').textContent = t.login;
+      document.getElementById('signupBtn').textContent = t.signup;
+      document.getElementById('logoutText').textContent = t.logout;
+      document.getElementById('totalExpensesLabel').textContent = t.totalExpenses;
+      document.getElementById('totalRevenueLabel').textContent = t.totalRevenue;
+      document.getElementById('netProfitLabel').textContent = t.netProfit;
+      document.getElementById('voiceText').textContent = t.voice;
+    }
+
+    // Show message helper
+    function showMessage(text, type) {
+      const colors = {
+        success: 'bg-green-100 border-green-400 text-green-700',
+        error: 'bg-red-100 border-red-400 text-red-700',
+        warning: 'bg-yellow-100 border-yellow-400 text-yellow-700'
+      };
+      
+      const msg = document.createElement('div');
+      msg.className = `${colors[type]} border-2 px-6 py-4 rounded-lg font-bold text-center fixed top-24 left-1/2 transform -translate-x-1/2 z-50 shadow-lg animate-in`;
+      msg.style.transform = 'translateX(-50%)';
+      msg.textContent = text;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+    }
+
+    // ============= DATA SYNC WITH CANVA SHEETS =============
+    
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        if (currentUser) {
+          updateUserCrops();
+          renderDashboard();
+          syncPending = false;
+        }
+      }
+    };
+
+    // Background sync function
+    async function syncDataToCanva() {
+      if (!currentUser || !window.dataSdk) return;
+      
+      syncPending = true;
+      showSyncIndicator(translations[currentLang].syncing);
+
+      const localData = StorageManager.getUserData(currentUser);
+      
+      // Sync each local entry that hasn't been synced yet
+      for (let entry of localData) {
+        if (!entry.__backendId) {
+          const result = await window.dataSdk.create({
+            ...entry,
+            user_id: currentUser
+          });
+          
+          if (result.isOk) {
+            entry.synced = true;
+          }
+        }
+      }
+
+      StorageManager.saveUserData(currentUser, localData);
+      showSyncIndicator(translations[currentLang].synced);
+      syncPending = false;
+    }
+
+    function showSyncIndicator(text) {
+      const existing = document.querySelector('.sync-indicator');
+      if (existing) existing.remove();
+      
+      const indicator = document.createElement('div');
+      indicator.className = 'sync-indicator';
+      indicator.textContent = text;
+      document.body.appendChild(indicator);
+      
+      setTimeout(() => indicator.remove(), 2000);
+    }
+
+    // ============= SDK INITIALIZATION =============
+    
+    async function initSDKs() {
+      const dataResult = await window.dataSdk.init(dataHandler);
+      if (!dataResult.isOk) {
+        console.error("Failed to initialize data SDK");
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            const appTitle = config.app_title || defaultConfig.app_title;
+            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+            const bgColor = config.background_color || defaultConfig.background_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+            const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+            const fontFamily = config.font_family || defaultConfig.font_family;
+            const fontSize = config.font_size || defaultConfig.font_size;
+
+            document.getElementById('appTitle').textContent = appTitle;
+            document.getElementById('welcomeMessage').textContent = welcomeMessage;
+
+            const farmPatterns = document.querySelectorAll('.farm-pattern');
+            farmPatterns.forEach(el => {
+              el.style.backgroundImage = `linear-gradient(135deg, ${bgColor} 0%, ${primaryColor} 100%), repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px)`;
+            });
+
+            const cards = document.querySelectorAll('.bg-white');
+            cards.forEach(el => {
+              el.style.backgroundColor = surfaceColor;
+            });
+
+            const textElements = document.querySelectorAll('.text-gray-800, .text-gray-700, .text-gray-600');
+            textElements.forEach(el => {
+              el.style.color = textColor;
+            });
+
+            const primaryBtns = document.querySelectorAll('.btn-primary');
+            primaryBtns.forEach(el => {
+              el.style.backgroundColor = primaryColor;
+            });
+
+            const secondaryBtns = document.querySelectorAll('.text-green-600');
+            secondaryBtns.forEach(el => {
+              el.style.color = secondaryColor;
+            });
+
+            document.body.style.fontFamily = `${fontFamily}, system-ui, -apple-system, sans-serif`;
+            document.body.style.fontSize = `${fontSize}px`;
+            
+            const headings = document.querySelectorAll('h1');
+            headings.forEach(el => {
+              el.style.fontSize = `${fontSize * 1.875}px`;
+            });
+            
+            const subheadings = document.querySelectorAll('h2');
+            subheadings.forEach(el => {
+              el.style.fontSize = `${fontSize * 1.5}px`;
+            });
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.background_color = value;
+                    window.elementSdk.setConfig({ background_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.surface_color = value;
+                    window.elementSdk.setConfig({ surface_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.text_color = value;
+                    window.elementSdk.setConfig({ text_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.primary_action_color = value;
+                    window.elementSdk.setConfig({ primary_action_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.secondary_action_color = value;
+                    window.elementSdk.setConfig({ secondary_action_color: value });
+                  }
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                if (window.elementSdk) {
+                  window.elementSdk.config.font_family = value;
+                  window.elementSdk.setConfig({ font_family: value });
+                }
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                if (window.elementSdk) {
+                  window.elementSdk.config.font_size = value;
+                  window.elementSdk.setConfig({ font_size: value });
+                }
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["app_title", config.app_title || defaultConfig.app_title],
+            ["welcome_message", config.welcome_message || defaultConfig.welcome_message]
+          ])
+        });
+      }
+    }
+
+    // ============= CROP & DATA MANAGEMENT =============
+    
+    function updateUserCrops() {
+      const userData = StorageManager.getUserData(currentUser);
+      const uniqueCrops = [...new Set(userData.map(d => d.crop_name))];
+      userCrops = uniqueCrops;
+    }
+
+    function renderCropsList() {
+      const cropsList = document.getElementById('cropsList');
+      
+      if (userCrops.length === 0) {
+        cropsList.innerHTML = `
+          <div class="col-span-full text-center p-8 bg-green-50 rounded-lg border-2 border-dashed border-green-300">
+            <p class="text-lg text-green-700 font-semibold">👇 Add your first crop below!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      cropsList.innerHTML = userCrops.map(crop => {
+        const cropData = getCropData(crop);
+        const profit = cropData.revenue - cropData.expenses;
+        const profitClass = profit >= 0 ? 'profit' : 'loss';
+        const cropEmoji = crops.find(c => c.name === crop)?.emoji || '🌱';
+        
+        return `
+          <div class="crop-card border-4 ${selectedCrop === crop ? 'active' : 'border-gray-200'} rounded-xl p-6 bg-white" data-crop="${crop}">
+            <div class="text-center">
+              <span class="text-5xl block mb-2">${cropEmoji}</span>
+              <h3 class="text-xl font-bold text-gray-800 mb-1">${crop}</h3>
+              <p class="text-sm text-gray-500 mb-3">${cropData.entries.length} entries</p>
+              <div class="border-t-2 pt-3">
+                <p class="text-xs text-gray-600">${profit >= 0 ? 'Profit' : 'Loss'}</p>
+                <p class="text-2xl font-bold ${profitClass}">₹${Math.abs(profit).toFixed(0)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      document.querySelectorAll('.crop-card').forEach(el => {
+        el.addEventListener('click', () => {
+          selectCrop(el.dataset.crop);
+        });
+      });
+    }
+    
+    function selectCrop(cropName) {
+      selectedCrop = cropName;
+      renderCropsList();
+      document.getElementById('expenseSection').style.display = 'block';
+      document.getElementById('sellSection').style.display = 'block';
+      document.getElementById('selectedCropName').textContent = cropName;
+      document.getElementById('sellSelectedCropName').textContent = cropName;
+      document.getElementById('expenseSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      initializeExpenseOptions();
+    }
+    
+    function initializeExpenseOptions() {
+      const expenseOptions = document.getElementById('expenseOptions');
+      expenseOptions.innerHTML = expenseTypes.map(exp => `
+        <div class="expense-option border-3 border-gray-300 rounded-xl p-4 text-center" data-value="${exp.name}">
+          <div class="text-4xl mb-2">${exp.emoji}</div>
+          <div class="text-sm font-bold">${exp.name}</div>
+          <div class="text-xs text-gray-600">${exp.hindi}</div>
+        </div>
+      `).join('');
+      
+      document.querySelectorAll('#expenseOptions .expense-option').forEach(el => {
+        el.addEventListener('click', () => {
+          document.querySelectorAll('#expenseOptions .expense-option').forEach(e => e.classList.remove('selected'));
+          el.classList.add('selected');
+          selectedExpense = el.dataset.value;
+        });
+      });
+    }
+    
+    function getCropData(cropName) {
+      const userData = StorageManager.getUserData(currentUser);
+      const cropData = userData.filter(d => d.crop_name === cropName);
+      const expenses = cropData.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+      const revenue = cropData.reduce((sum, entry) => sum + (entry.revenue || 0), 0);
+      return { expenses, revenue, entries: cropData };
+    }
+
+    // ============= AUTH EVENT LISTENERS =============
+    
+    document.getElementById('langToggle').addEventListener('click', toggleLanguage);
+    document.getElementById('langToggleDash').addEventListener('click', toggleLanguage);
+    
+    document.getElementById('showSignupBtn').addEventListener('click', () => {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+    });
+
+    document.getElementById('showLoginBtn').addEventListener('click', () => {
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+    });
+
+    document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      const result = StorageManager.loginUser(email, password);
+      
+      if (result.success) {
+        currentUser = email;
+        document.getElementById('userGreeting').textContent = `${translations[currentLang].welcome}, ${result.user.name}!`;
+        showDashboard();
+        showMessage('✅ ' + result.message, 'success');
+        syncDataToCanva();
+      } else {
+        showMessage('❌ ' + result.message, 'error');
+      }
+    });
+
+    document.getElementById('signupFormElement').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      
+      if (password.length < 6) {
+        showMessage('❌ ' + translations[currentLang].passwordShort, 'error');
+        return;
+      }
+      
+      const result = StorageManager.registerUser(email, password, name);
+      
+      if (result.success) {
+        const loginResult = StorageManager.loginUser(email, password);
+        currentUser = email;
+        document.getElementById('userGreeting').textContent = `${translations[currentLang].welcome}, ${name}!`;
+        showDashboard();
+        showMessage('✅ ' + result.message, 'success');
+      } else {
+        showMessage('❌ ' + result.message, 'error');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      syncDataToCanva();
+      currentUser = null;
+      userCrops = [];
+      selectedCrop = '';
+      selectedExpense = '';
+      StorageManager.clearSession();
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('dashboardScreen').style.display = 'none';
+      document.getElementById('expenseSection').style.display = 'none';
+      document.getElementById('sellSection').style.display = 'none';
+      document.getElementById('loginFormElement').reset();
+      document.getElementById('signupFormElement').reset();
+      showMessage('Logged out successfully', 'success');
+    });
+
+    function showDashboard() {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('dashboardScreen').style.display = 'block';
+      updateUserCrops();
+      renderDashboard();
+    }
+
+    // ============= CROP OPERATIONS =============
+    
+    document.getElementById('voiceBtn').addEventListener('click', () => {
+      showMessage(currentLang === 'en' ? '🎤 Voice input is a demo feature' : '🎤 वॉयस इनपुट एक डेमो फीचर है', 'warning');
+    });
+
+    document.getElementById('addCropBtn').addEventListener('click', () => {
+      const cropInput = document.getElementById('newCropInput');
+      const cropName = cropInput.value.trim();
+      
+      if (!cropName) {
+        showMessage('Please enter crop name', 'warning');
+        return;
+      }
+      
+      if (userCrops.includes(cropName)) {
+        showMessage('Crop already exists', 'warning');
+        return;
+      }
+      
+      userCrops.push(cropName);
+      cropInput.value = '';
+      renderCropsList();
+      selectCrop(cropName);
+      showMessage(`${cropName} added! ✅`, 'success');
+    });
+    
+    document.getElementById('changeCropBtn').addEventListener('click', () => {
+      selectedCrop = '';
+      selectedExpense = '';
+      document.getElementById('expenseSection').style.display = 'none';
+      document.getElementById('sellSection').style.display = 'none';
+      renderCropsList();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // ============= ENTRY FORM =============
+    
+    document.getElementById('entryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (isUpdating) return;
+      
+      if (!selectedExpense) {
+        showMessage('Please select activity type', 'warning');
+        return;
+      }
+      
+      isUpdating = true;
+      const addBtnText = document.getElementById('addBtnText');
+      const originalText = addBtnText.textContent;
+      addBtnText.textContent = currentLang === 'en' ? 'Adding...' : 'जोड़ा जा रहा है...';
+      
+      const now = new Date();
+      const newEntry = {
+        user_id: currentUser,
+        crop_name: selectedCrop,
+        expense_type: selectedExpense,
+        amount: parseFloat(document.getElementById('amount').value) || 0,
+        revenue: 0,
+        date: now.toISOString(),
+        season: document.getElementById('season').value,
+        month: now.toLocaleString('default', { month: 'long' }),
+        year: now.getFullYear(),
+        quantity: 0,
+        unit: '',
+        synced: false
+      };
+      
+      // Save to local storage immediately
+      const localData = StorageManager.getUserData(currentUser);
+      localData.push(newEntry);
+      StorageManager.saveUserData(currentUser, localData);
+      
+      document.getElementById('entryForm').reset();
+      document.querySelectorAll('.expense-option').forEach(e => e.classList.remove('selected'));
+      selectedExpense = '';
+      
+      updateUserCrops();
+      renderDashboard();
+      showMessage('✅ Expense added to local storage!', 'success');
+      
+      // Sync to Canva in background
+      syncDataToCanva();
+      
+      isUpdating = false;
+      addBtnText.textContent = originalText;
+    });
+
+    // ============= SELL FORM =============
+    
+    document.getElementById('sellForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (isUpdating) return;
+      
+      isUpdating = true;
+      const sellBtnText = document.getElementById('sellBtnText');
+      const originalText = sellBtnText.textContent;
+      sellBtnText.textContent = currentLang === 'en' ? 'Selling...' : 'बेचा जा रहा है...';
+      
+      const now = new Date();
+      const sellEntry = {
+        user_id: currentUser,
+        crop_name: selectedCrop,
+        expense_type: 'Sale',
+        amount: 0,
+        revenue: parseFloat(document.getElementById('sellRevenue').value) || 0,
+        date: now.toISOString(),
+        season: '',
+        month: now.toLocaleString('default', { month: 'long' }),
+        year: now.getFullYear(),
+        quantity: parseFloat(document.getElementById('sellQuantity').value) || 0,
+        unit: 'kg',
+        synced: false
+      };
+      
+      // Save to local storage immediately
+      const localData = StorageManager.getUserData(currentUser);
+      localData.push(sellEntry);
+      StorageManager.saveUserData(currentUser, localData);
+      
+      document.getElementById('sellForm').reset();
+      updateUserCrops();
+      renderDashboard();
+      showMessage('✅ Crop sold & saved locally!', 'success');
+      
+      // Sync to Canva in background
+      syncDataToCanva();
+      
+      isUpdating = false;
+      sellBtnText.textContent = originalText;
+    });
+
+    // ============= DASHBOARD RENDERING =============
+    
+    function renderDashboard() {
+      const userData = StorageManager.getUserData(currentUser);
+      
+      const totalExpenses = userData.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+      const totalRevenue = userData.reduce((sum, entry) => sum + (entry.revenue || 0), 0);
+      const netProfit = totalRevenue - totalExpenses;
+      
+      document.getElementById('totalExpenses').textContent = `₹${totalExpenses.toFixed(0)}`;
+      document.getElementById('totalRevenue').textContent = `₹${totalRevenue.toFixed(0)}`;
+      document.getElementById('netProfit').textContent = `₹${netProfit.toFixed(0)}`;
+      document.getElementById('netProfit').className = netProfit >= 0 ? 'big-number profit' : 'big-number loss';
+      
+      renderCropsList();
+      renderCropsDetails();
+    }
+
+    function renderCropsDetails() {
+      const cropsDetailsList = document.getElementById('cropsDetailsList');
+      
+      if (userCrops.length === 0) {
+        cropsDetailsList.innerHTML = `<p class="text-gray-500 text-center py-8 text-lg">No crops yet. Add your first crop above!</p>`;
+        return;
+      }
+      
+      cropsDetailsList.innerHTML = userCrops.map(crop => {
+        const cropData = getCropData(crop);
+        const profit = cropData.revenue - cropData.expenses;
+        const profitClass = profit >= 0 ? 'profit' : 'loss';
+        const cropEmoji = crops.find(c => c.name === crop)?.emoji || '🌱';
+        
+        return `
+          <div class="border-3 border-gray-200 rounded-xl p-6 bg-gradient-to-r from-green-50 to-blue-50">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center gap-4">
+                <span class="text-6xl">${cropEmoji}</span>
+                <div>
+                  <h3 class="text-3xl font-bold text-gray-800">${crop}</h3>
+                  <p class="text-lg text-gray-500">${cropData.entries.length} entries</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-lg text-gray-600 mb-1">${profit >= 0 ? 'Profit / लाभ' : 'Loss / हानि'}</p>
+                <p class="text-4xl font-black ${profitClass}">₹${Math.abs(profit).toFixed(0)}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center bg-red-100 rounded-xl p-4 border-2 border-red-300">
+                <p class="text-sm text-gray-600 mb-2">Total Expenses</p>
+                <p class="text-3xl font-bold text-red-600">₹${cropData.expenses.toFixed(0)}</p>
+              </div>
+              <div class="text-center bg-green-100 rounded-xl p-4 border-2 border-green-300">
+                <p class="text-sm text-gray-600 mb-2">Total Revenue</p>
+                <p class="text-3xl font-bold text-green-600">₹${cropData.revenue.toFixed(0)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============= CHECK FOR EXISTING SESSION & INITIALIZE =============
+    
+    window.addEventListener('load', () => {
+      const session = StorageManager.getSession();
+      
+      if (session) {
+        // Auto-login with existing session
+        currentUser = session.email;
+        const users = StorageManager.getUsers();
+        const user = users[currentUser];
+        if (user) {
+          document.getElementById('userGreeting').textContent = `${translations[currentLang].welcome}, ${user.name}!`;
+          showDashboard();
+          initSDKs();
+          syncDataToCanva();
+        }
+      } else {
+        initSDKs();
+      }
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c6ed03bd1d5a923',t:'MTc2OTkyMTI3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
